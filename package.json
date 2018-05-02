@@ -1,0 +1,33 @@
+{
+  "name": "gql-demo-app",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "apollo-cache-persist": "^0.1.1",
+    "apollo-client-preset": "^1.0.8",
+    "apollo-link-state": "^0.4.1",
+    "apollo-link-ws": "^1.0.8",
+    "bootstrap": "4.0.0",
+    "element-react": "^1.4.11",
+    "element-theme-default": "^1.4.13",
+    "font-awesome": "4.7.0",
+    "graphql": "^0.13.2",
+    "graphql-tag": "^2.8.0",
+    "react": "^16.2.0",
+    "react-apollo": "^2.1.2",
+    "react-dom": "^16.2.0",
+    "react-error-overlay": "4.0.0",
+    "react-icons": "^2.2.7",
+    "react-router": "^4.2.0",
+    "react-router-dom": "^4.2.2",
+    "react-scripts": "1.1.1",
+    "styled-components": "^3.2.6",
+    "subscriptions-transport-ws": "^0.9.8"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
