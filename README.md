@@ -9,7 +9,14 @@ Some of the cool libraries used in this demo:
 - graphql
 - react-router
 
+```
+// frontend dev server
+yarn start
+
+// mock backend 
+cd server && yarn start
+```
+
 
 ## Backend
 Work in progress...
-
