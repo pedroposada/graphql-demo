@@ -11,10 +11,10 @@ Some of the cool libraries used in this demo:
 
 ```
 // frontend dev server
-yarn start
+yarn && yarn start
 
 // mock backend 
-cd server && yarn start
+cd backend-mock && yarn && yarn start
 ```
 
 
