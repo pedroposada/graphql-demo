@@ -12,19 +12,21 @@ export const defaults = {
     name: '',
     id: '',
     email: ''
-  }
+  },
+  token: null
 }
 
 export const resolvers = {
   Mutation: {
-    updateAccount: (_, { name, email, id }, { cache }) => {
+    updateAccount: (_, { name, email, id, token }, { cache }) => {
       cache.writeData({ data: { 
         account: { 
+          __typename: 'Account', 
           name, 
           email, 
-          id, 
-          __typename: 'Account' 
-        }
+          id
+        },
+        token
       }})
       return null
     },

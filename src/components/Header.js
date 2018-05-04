@@ -1,8 +1,7 @@
 import React, { Component } from 'react'
 import { Menu, Layout } from 'element-react'
 import { withRouter } from 'react-router'
-import { AUTH_TOKEN } from '../constants'
-import { compose, graphql } from 'react-apollo'
+import { compose, graphql, withApollo } from 'react-apollo'
 import FaUser from 'react-icons/lib/fa/user'
 import FaHome from 'react-icons/lib/fa/home'
 import styled from 'styled-components'
@@ -10,7 +9,7 @@ import gql from 'graphql-tag'
 
 class Header extends Component {
   render() {
-    const authToken = localStorage.getItem(AUTH_TOKEN)
+    const { token:authToken } = this.props.accountQuery
     return (
       <Menu key='0' mode="horizontal" onSelect={this.onSelect} defaultActive={this.props.location.pathname}>
         <Layout.Row type="flex" justify="end">
@@ -43,9 +42,9 @@ class Header extends Component {
     )
   }
 
-  onSelect = (index) => {
+  onSelect = async (index) => {
     if (index === "/logout") {
-      localStorage.clear()
+      await this.props.client.resetStore()
       this.props.history.push("/")
       return
     }
@@ -83,13 +82,17 @@ const StyledSubMenu = styled(Menu.SubMenu)`
 
 const ACCOUNT_QUERY = gql`
   query AccountQuery {
+    token @client
     account @client {
       name
+      id
+      email
     }
   }
 `
 
 export default compose(
   withRouter,
+  withApollo,
   graphql(ACCOUNT_QUERY, { name: 'accountQuery' })
 )(Header)

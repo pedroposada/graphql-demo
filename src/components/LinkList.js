@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { graphql, compose } from 'react-apollo'
 import gql from 'graphql-tag'
 import { Table, Button, Tag, Notification, Pagination, Layout, Card } from 'element-react'
-import { AUTH_TOKEN, LINKS_PER_PAGE } from '../constants';
+import { LINKS_PER_PAGE } from '../constants';
 import Search from './Search';
 
 class LinkList extends Component {
@@ -16,13 +16,14 @@ class LinkList extends Component {
   }
 
   render() {
-    const authToken = localStorage.getItem(AUTH_TOKEN)
+    const { token:authToken } = this.props.accountQuery
     
     if (this.props.feedQuery && this.props.feedQuery.loading) {
       return <div>Loading</div>
     }
     
     if (this.props.feedQuery && this.props.feedQuery.error) {
+      console.log(this.props.feedQuery.error)
       return <div>Error</div>
     }
     
@@ -235,6 +236,12 @@ const VOTE_MUTATION = gql`
   }
 `
 
+const ACCOUNT_QUERY = gql`
+  query AccountQuery {
+    token @client
+  }
+`
+
 export default compose(
   graphql(VOTE_MUTATION, { name: 'voteMutation' }),
   graphql(FEED_QUERY, {
@@ -248,5 +255,6 @@ export default compose(
         variables: { first, skip, orderBy },
       }
     },
-  })
+  }),
+  graphql(ACCOUNT_QUERY, { name: 'accountQuery' })
 )(LinkList)

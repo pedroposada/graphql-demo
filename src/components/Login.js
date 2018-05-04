@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import { AUTH_TOKEN } from '../constants'
 import { Card, Input, Button, Tooltip } from 'element-react';
 import { graphql, compose } from 'react-apollo'
 import gql from 'graphql-tag'
@@ -92,8 +91,7 @@ class Login extends Component {
   }
   
   _saveUserData = ({ token, user: { name, id, email } }) => {
-    localStorage.setItem(AUTH_TOKEN, token)
-    this.props.accountMutation({ variables: { name, id, email } })
+    this.props.accountMutation({ variables: { name, id, email, token } })
   }
 }
 
@@ -124,8 +122,8 @@ const LOGIN_MUTATION = gql`
 `
 
 const ACCOUNT_MUTATION = gql`
-  mutation AccountMutation($email: String!, $name: String!, $name: String!) {
-    updateAccount(email: $email, name: $name, id: $id) @client
+  mutation AccountMutation($email: String!, $name: String!, $name: String!, $token: String!) {
+    updateAccount(email: $email, name: $name, id: $id, token: $token) @client
   }
 `
 

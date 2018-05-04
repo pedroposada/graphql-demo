@@ -7,57 +7,20 @@ import { ApolloClient } from 'apollo-client'
 import { HttpLink } from 'apollo-link-http'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import { BrowserRouter } from 'react-router-dom'
-import { AUTH_TOKEN } from './constants'
+import { LOCAL_STORE_KEY } from './constants'
 import 'element-theme-default';
 import './index.css'
-import { ApolloLink, split } from 'apollo-client-preset'
+import { ApolloLink, split, gql } from 'apollo-client-preset'
 import { WebSocketLink } from 'apollo-link-ws'
 import { getMainDefinition } from 'apollo-utilities'
 import { withClientState } from 'apollo-link-state'
 import * as account from './stores/account'
 import { persistCache } from 'apollo-cache-persist'
+import localforage from 'localforage'
 
-
-/**
- * HTTP
- */
-const httpLink = new HttpLink({ uri: 'http://localhost:4000' })
-const middlewareAuthLink = new ApolloLink((operation, forward) => {
-  const token = localStorage.getItem(AUTH_TOKEN)
-  const authorizationHeader = token ? `Bearer ${token}` : null
-  operation.setContext({
-    headers: {
-      authorization: authorizationHeader
-    }
-  })
-  return forward(operation)
+export const store = localforage.createInstance({
+  name: LOCAL_STORE_KEY
 })
-const httpLinkWithAuthToken = middlewareAuthLink.concat(httpLink)
-
-/**
- * WEB SOCKETS
- */
-const wsLink = new WebSocketLink({
-  uri: `ws://localhost:4000`,
-  options: {
-    reconnect: true,
-    connectionParams: {
-      authToken: localStorage.getItem(AUTH_TOKEN),
-    }
-  }
-})
-
-/**
- * HTTP/WS SPLITTER
- */
-const link = split(
-  ({ query }) => {
-    const { kind, operation } = getMainDefinition(query)
-    return kind === 'OperationDefinition' && operation === 'subscription'
-  },
-  wsLink,
-  httpLinkWithAuthToken,
-)
 
 /**
  * LOCAL CACHE
@@ -65,7 +28,8 @@ const link = split(
 const cache = new InMemoryCache()
 persistCache({
   cache,
-  storage: window.localStorage
+  storage: store,
+  key: LOCAL_STORE_KEY
 })
 
 /**
@@ -83,6 +47,60 @@ const stateLink = withClientState({
     ...account.resolvers
   },
 })
+
+/**
+ * LOCAL AUTH TOKEN
+ */
+const tokenFn = () => {
+  const { token } = cache.readQuery({
+    query: gql`
+      query GetToken {
+        token @client
+      }
+    `
+  })
+  return token
+}
+
+/**
+ * HTTP
+ */
+const httpLink = new HttpLink({ uri: 'http://localhost:4000' })
+const middlewareAuthLink = new ApolloLink((operation, forward) => {
+  const authorizationHeader = `Bearer ${tokenFn()}`
+  operation.setContext({
+    headers: {
+      authorization: authorizationHeader
+    }
+  })
+  return forward(operation)
+})
+const httpLinkWithAuthToken = middlewareAuthLink.concat(httpLink)
+
+/**
+ * WEB SOCKETS
+ */
+const wsLink = new WebSocketLink({
+  uri: `ws://localhost:4000`,
+  options: {
+    reconnect: true,
+    connectionParams: {
+      authToken: tokenFn()
+    }
+  }
+})
+
+/**
+ * HTTP/WS SPLITTER
+ */
+const link = split(
+  ({ query }) => {
+    const { kind, operation } = getMainDefinition(query)
+    return kind === 'OperationDefinition' && operation === 'subscription'
+  },
+  wsLink,
+  httpLinkWithAuthToken,
+)
 
 /**
  * APOLLO CLIENT
@@ -109,4 +127,5 @@ ReactDOM.render(
   </BrowserRouter>
   , document.getElementById('root')
 )
+
 registerServiceWorker()
